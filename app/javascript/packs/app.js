@@ -67,27 +67,27 @@ var app = new Vue({
                 let task = this.tasks.find(item => item.id ==id);
                 if(task){
                   task.completed = !task.completed;
-                  console.log('task toggled');
-                  this.message = `Task ${id} updated`
-                          
-                          
+                  this.task = task;             
+                  Api.updateTask(this.task).then(function(response){
+                  app.listTasks();
+                  app.clear();
+                  let status = response.completed ? 'completed' : 'in progress';
+                  app.message = `Task ${response.id} is ${status} `;
+                  })          
                 }
               },
               
               createTask: function(event){
-                event.preventDefault();
-                
                 if(!this.task.completed){
                   this.task.completed = false;
                 }else{
                   this.task.completed = true;
                 }
-                let taskId = this.nextId;
-                this.task.id =taskId;
-                this.tasks.push(this.task);
-                this.clear();
-                this.message = `Task ${taskId} created`
-                
+                Api.createTask(this.task).then(function(response){
+                  app.listTasks();
+                  app.clear();
+                  app.message = `Task ${response.id} created`
+                })
                 
               },
                 
@@ -103,24 +103,22 @@ var app = new Vue({
               },
               
               updateTask: function(event, id){
-                event.stopImmediatePropagation();
-                event.preventDefault();
-                let task= this.tasks.find(item => item.id == id);
-                
-                if(task){
-                  task.name = this.task.name;
-                  task.description = this.task.description;
-                  task.completed = this.task.completed;
-                  this.message = `Task ${id} updated`
-                }
+                event.stopImmediatePropagation();              
+                Api.updateTask(this.task).then(function(response){
+                  app.listTasks();
+                  app.clear();
+                  app.message = `Task ${response.id} updated`
+                })
               },
               
               deleteTask: function(event,id){
                 event.stopImmediatePropagation();
                 let taskIndex = this.tasks.findIndex(item => item.id == id);
                 if(taskIndex > -1){
-                  this.$delete(this.tasks, taskIndex);
-                  this.message = `Task ${id} deleted`
+                  Api.deleteTask(id).then(function(response){
+                  app.$delete(app.tasks, taskIndex);
+                  app.message = `Task ${id} deleted`
+                  });
                 }
               }           
     },
